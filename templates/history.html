@@ -12,23 +12,24 @@
     <meta property="og:type" content="website">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="assets/amsterdam-flag.svg">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/amsterdam-flag.svg') }}">
     
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/main.css') }}">
 </head>
 <body>
     <header class="header">
         <nav class="nav">
             <div class="nav-container">
-                <a href="index.html" class="nav-logo">
-                    <img src="assets/amsterdam-flag.svg" alt="Amsterdam flag" class="flag-icon">
+                <a href="{{ url_for('home') }}" class="nav-logo">
+                    <img src="{{ url_for('static', filename='assets/amsterdam-flag.svg') }}" alt="Amsterdam flag" class="flag-icon">
                     <span class="nav-title">Amsterdam</span>
                 </a>
                 <ul class="nav-links">
-                    <li><a href="index.html" class="nav-link">Home</a></li>
-                    <li><a href="history.html" class="nav-link active">History Fun Facts</a></li>
-                    <li><a href="water.html" class="nav-link">Water Life</a></li>
+                    <li><a href="{{ url_for('home') }}" class="nav-link">Home</a></li>
+                    <li><a href="{{ url_for('history') }}" class="nav-link active">History Fun Facts</a></li>
+                    <li><a href="{{ url_for('water') }}" class="nav-link">Water Life</a></li>
+                    <li><a href="{{ url_for('calculator') }}" class="nav-link">Calculator</a></li>
                 </ul>
             </div>
         </nav>

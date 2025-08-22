@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canal Calculator - Amsterdam</title>
+    <meta name="description" content="A Python-powered calculator on the Amsterdam discovery site.">
+    
+    <!-- Open Graph / Social Media Preview -->
+    <meta property="og:title" content="Amsterdam Canal Calculator">
+    <meta property="og:description" content="Calculate like a Dutch merchant with Python power!">
+    <meta property="og:type" content="website">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/amsterdam-flag.svg') }}">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/main.css') }}">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-container">
+                <a href="{{ url_for('home') }}" class="nav-logo">
+                    <img src="{{ url_for('static', filename='assets/amsterdam-flag.svg') }}" alt="Amsterdam flag" class="flag-icon">
+                    <span class="nav-title">Amsterdam</span>
+                </a>
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('home') }}" class="nav-link">Home</a></li>
+                    <li><a href="{{ url_for('history') }}" class="nav-link">History Fun Facts</a></li>
+                    <li><a href="{{ url_for('water') }}" class="nav-link">Water Life</a></li>
+                    <li><a href="{{ url_for('calculator') }}" class="nav-link active">Calculator</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main">
+        <section class="page-hero">
+            <div class="page-container">
+                <h1 class="page-title">🧮 Canal Calculator</h1>
+                <p class="page-subtitle">Calculate like a Dutch merchant! (Python-powered)</p>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="content-container">
+                <div class="calculator-container">
+                    <form method="POST" class="calculator-form">
+                        <div class="calc-input-group">
+                            <label for="number1">First Number:</label>
+                            <input type="number" step="any" name="number1" id="number1" 
+                                   value="{{ request.form.get('number1', '') }}" required>
+                        </div>
+                        
+                        <div class="calc-input-group">
+                            <label for="operation">Operation:</label>
+                            <select name="operation" id="operation" required>
+                                <option value="add" {{ 'selected' if request.form.get('operation') == 'add' else '' }}>+ Add</option>
+                                <option value="subtract" {{ 'selected' if request.form.get('operation') == 'subtract' else '' }}>- Subtract</option>
+                                <option value="multiply" {{ 'selected' if request.form.get('operation') == 'multiply' else '' }}>× Multiply</option>
+                                <option value="divide" {{ 'selected' if request.form.get('operation') == 'divide' else '' }}>÷ Divide</option>
+                            </select>
+                        </div>
+                        
+                        <div class="calc-input-group">
+                            <label for="number2">Second Number:</label>
+                            <input type="number" step="any" name="number2" id="number2" 
+                                   value="{{ request.form.get('number2', '') }}" required>
+                        </div>
+                        
+                        <button type="submit" class="calc-button">Calculate with Python! 🐍</button>
+                    </form>
+                    
+                    {% if result is not none %}
+                        <div class="calc-result success">
+                            <h3>✅ Result: {{ result }}</h3>
+                            <p>Calculated by Python on the server!</p>
+                        </div>
+                    {% endif %}
+                    
+                    {% if error %}
+                        <div class="calc-result error">
+                            <h3>❌ Error: {{ error }}</h3>
+                            <p>Try again with different numbers.</p>
+                        </div>
+                    {% endif %}
+
+                    <div class="calc-info">
+                        <h3>🐍 How This Works:</h3>
+                        <p>When you click "Calculate", the form data is sent to our Python Flask server. 
+                        Python performs the calculation and sends the result back to display here. 
+                        This is different from your static HTML site - now we have server-side logic!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <p class="footer-text">&copy; 2024 Amsterdam Discovery Site. Calculator powered by Python Flask! 🐍</p>
+        </div>
+    </footer>
+</body>
+</html>
