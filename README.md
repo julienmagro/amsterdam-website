@@ -14,7 +14,12 @@ A beautiful, modern website showcasing Amsterdam's history and canal life. Built
   - History Fun Facts about Amsterdam
   - Water Life in the canals
   - **Python Calculator** - Server-side calculations with Flask
-- **Dual Deployment**: Static version (GitHub Pages) + Dynamic version (Render)
+  - **Admin Panel** - Professional user management dashboard
+- **User Authentication**: Secure login/register with encrypted passwords
+- **Role-Based Access**: Admin vs regular user permissions  
+- **Personal Data**: Users only see their own calculation history
+- **Professional Navigation**: Dropdown menu with user status
+- **Production Ready**: Enterprise-grade security and deployment
 
 ## 🛠️ Tech Stack
 

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Amsterdam</title>
+    <meta name="description" content="Login to access your calculation history and chat with our Amsterdam AI guide.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/amsterdam-flag.svg') }}">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/main.css') }}">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-container">
+                <a href="{{ url_for('home') }}" class="nav-logo">
+                    <img src="{{ url_for('static', filename='assets/amsterdam-flag.svg') }}" alt="Amsterdam flag" class="flag-icon">
+                    <span class="nav-title">Amsterdam</span>
+                </a>
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('home') }}" class="nav-link">Home</a></li>
+                    <li><a href="{{ url_for('login') }}" class="nav-link active">Login</a></li>
+                    <li><a href="{{ url_for('register') }}" class="nav-link">Register</a></li>
+                </ul>
+                
+                <!-- User menu -->
+                {% include 'user_menu.html' %}
+            </div>
+        </nav>
+    </header>
+
+    <main class="main">
+        <section class="page-hero">
+            <div class="page-container">
+                <h1 class="page-title">🔑 Welcome Back</h1>
+                <p class="page-subtitle">Login to access your personal Amsterdam experience</p>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="content-container">
+                <div class="auth-container">
+                    
+                    <!-- Flash messages -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            <div class="flash-messages">
+                                {% for category, message in messages %}
+                                    <div class="flash-message flash-{{ category }}">
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" class="auth-form">
+                        <div class="form-group">
+                            <label for="email">Email Address:</label>
+                            <input type="email" name="email" id="email" required 
+                                   placeholder="your.email@example.com"
+                                   value="{{ request.form.get('email', '') }}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password">Password:</label>
+                            <input type="password" name="password" id="password" required 
+                                   placeholder="Your password">
+                        </div>
+                        
+                        <button type="submit" class="auth-button">Login</button>
+                    </form>
+
+                    <div class="auth-links">
+                        <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
+                        <p><a href="{{ url_for('home') }}">← Back to home</a></p>
+                    </div>
+
+                    <div class="auth-info">
+                        <h3>🚀 After logging in:</h3>
+                        <ul>
+                            <li>📊 <strong>View your calculations:</strong> See your personal calculation history</li>
+                            <li>🧮 <strong>Save new calculations:</strong> All calculations automatically saved</li>
+                            <li>🤖 <strong>AI Chat:</strong> Coming soon - chat with our Amsterdam guide</li>
+                            <li>🔒 <strong>Private data:</strong> Only you can see your information</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <p class="footer-text">&copy; 2024 Amsterdam Discovery Site. Secure login protected! 🔒</p>
+        </div>
+    </footer>
+
+    <!-- User menu JavaScript -->
+    {% include 'user_menu_script.html' %}
+</body>
+</html>

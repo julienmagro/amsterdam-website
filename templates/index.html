@@ -32,6 +32,9 @@
                     <li><a href="{{ url_for('water') }}" class="nav-link">Water Life</a></li>
                     <li><a href="{{ url_for('calculator') }}" class="nav-link">Calculator</a></li>
                 </ul>
+                
+                <!-- User menu -->
+                {% include 'user_menu.html' %}
             </div>
         </nav>
     </header>
@@ -69,5 +72,8 @@
             <p class="footer-text">&copy; 2024 Amsterdam Discovery Site. Built with ❤️ for learning.</p>
         </div>
     </footer>
+
+    <!-- User menu JavaScript -->
+    {% include 'user_menu_script.html' %}
 </body>
 </html>

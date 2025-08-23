@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculation History - Amsterdam</title>
+    <meta name="description" content="View your calculation history on the Amsterdam discovery site.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/amsterdam-flag.svg') }}">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/main.css') }}">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-container">
+                <a href="{{ url_for('home') }}" class="nav-logo">
+                    <img src="{{ url_for('static', filename='assets/amsterdam-flag.svg') }}" alt="Amsterdam flag" class="flag-icon">
+                    <span class="nav-title">Amsterdam</span>
+                </a>
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('home') }}" class="nav-link">Home</a></li>
+                    <li><a href="{{ url_for('history') }}" class="nav-link">History Fun Facts</a></li>
+                    <li><a href="{{ url_for('water') }}" class="nav-link">Water Life</a></li>
+                    <li><a href="{{ url_for('calculator') }}" class="nav-link">Calculator</a></li>
+                </ul>
+                
+                <!-- User menu -->
+                {% include 'user_menu.html' %}
+            </div>
+        </nav>
+    </header>
+
+    <main class="main">
+        <section class="page-hero">
+            <div class="page-container">
+                <h1 class="page-title">📊 Calculation History</h1>
+                <p class="page-subtitle">Your mathematical journey through Amsterdam</p>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="content-container">
+                
+                {% if error %}
+                    <div class="calc-result error">
+                        <h3>❌ Error: {{ error }}</h3>
+                        <p><a href="{{ url_for('calculator') }}">← Back to Calculator</a></p>
+                    </div>
+                {% elif calculations %}
+                    <div class="calculation-stats">
+                        <h2>📈 Your Statistics</h2>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h3>{{ calculations|length }}</h3>
+                                <p>Total Calculations</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>{{ calculations|selectattr('operation', 'equalto', 'add')|list|length }}</h3>
+                                <p>Additions</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>{{ calculations|selectattr('operation', 'equalto', 'multiply')|list|length }}</h3>
+                                <p>Multiplications</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>{{ calculations[0].calculated_at.strftime('%b %d') if calculations else 'Never' }}</h3>
+                                <p>Last Calculation</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="calculation-list">
+                        <h2>🧮 Recent Calculations</h2>
+                        <div class="calculations-grid">
+                            {% for calc in calculations %}
+                                <div class="calculation-card">
+                                    <div class="calc-expression">
+                                        <span class="calc-number">{{ calc.number1|round(2) if calc.number1 != calc.number1|int else calc.number1|int }}</span>
+                                        <span class="calc-operator">
+                                            {% if calc.operation == 'add' %}+
+                                            {% elif calc.operation == 'subtract' %}−
+                                            {% elif calc.operation == 'multiply' %}×
+                                            {% elif calc.operation == 'divide' %}÷
+                                            {% endif %}
+                                        </span>
+                                        <span class="calc-number">{{ calc.number2|round(2) if calc.number2 != calc.number2|int else calc.number2|int }}</span>
+                                        <span class="calc-equals">=</span>
+                                        <span class="calc-result">{{ calc.result|round(2) if calc.result != calc.result|int else calc.result|int }}</span>
+                                    </div>
+                                    <div class="calc-meta">
+                                        <span class="calc-time">{{ calc.calculated_at.strftime('%b %d, %Y at %I:%M %p') }}</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                {% else %}
+                    <div class="empty-state">
+                        <h2>🧮 No Calculations Yet</h2>
+                        <p>You haven't performed any calculations yet. Start calculating to see your history here!</p>
+                        <a href="{{ url_for('calculator') }}" class="cta-button">Try the Calculator</a>
+                    </div>
+                {% endif %}
+
+                <div class="history-actions">
+                    <a href="{{ url_for('calculator') }}" class="cta-button">← Back to Calculator</a>
+                    <a href="{{ url_for('home') }}" class="cta-button secondary">Home</a>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <p class="footer-text">&copy; 2024 Amsterdam Discovery Site. Your calculation history is stored locally! 📊</p>
+        </div>
+    </footer>
+
+    <!-- User menu JavaScript -->
+    {% include 'user_menu_script.html' %}
+</body>
+</html>
