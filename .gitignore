@@ -1,0 +1,68 @@
+# ===== SECURITY: NEVER COMMIT THESE FILES =====
+
+# Database files (contain user data, even in development)
+*.db
+*.sqlite
+*.sqlite3
+instance/
+migrations/
+
+# Environment variables and secrets
+.env
+.env.local
+.env.development
+.env.production
+*.pem
+*.key
+
+# Python cache and virtual environment
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+ENV/
+.venv/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS system files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+logs/
+temp/
+
+# Build and distribution
+build/
+dist/
+*.egg-info/
+
+# Test coverage reports
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Backup files
+*.bak
+*.backup
+*.orig
