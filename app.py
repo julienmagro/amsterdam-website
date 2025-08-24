@@ -36,7 +36,7 @@ def load_user(user_id):
     - Called on every request to check if user is logged in
     - Returns User object or None
     """
-    return User.query.get(user_id)
+    return db.session.get(User, user_id)
 
 # Admin protection decorator
 def admin_required(f):
