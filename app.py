@@ -375,7 +375,5 @@ def admin_toggle_admin(user_id):
 # Debug functions removed for production security
 
 if __name__ == "__main__":
+    # Local development only - gunicorn handles production
     app.run(debug=True, port=5001)
-else:
-    # Production configuration
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
