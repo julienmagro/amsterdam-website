@@ -898,6 +898,17 @@ a:hover {
     white-space: nowrap;
 }
 
+.user-age {
+    text-align: center;
+    font-weight: 500;
+    min-width: 50px;
+}
+
+.no-age {
+    color: var(--text-gray);
+    font-style: italic;
+}
+
 .dropdown-arrow {
     font-size: var(--font-size-xs);
     transition: transform 0.2s ease;
@@ -1074,6 +1085,14 @@ a:hover {
 
 .form-group input::placeholder {
     color: rgba(255, 255, 255, 0.6);
+}
+
+.form-help {
+    display: block;
+    margin-top: var(--spacing-xs);
+    font-size: var(--font-size-xs);
+    color: var(--text-gray);
+    font-style: italic;
 }
 
 .auth-button {

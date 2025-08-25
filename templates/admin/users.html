@@ -69,6 +69,7 @@
                                 <tr>
                                     <th>User</th>
                                     <th>Email</th>
+                                    <th>Age</th>
                                     <th>Role</th>
                                     <th>Joined</th>
                                     <th>Calculations</th>
@@ -90,6 +91,13 @@
                                             </div>
                                         </td>
                                         <td class="user-email">{{ user.email }}</td>
+                                        <td class="user-age">
+                                            {% if user.user_age %}
+                                                {{ user.user_age }}
+                                            {% else %}
+                                                <span class="no-age">-</span>
+                                            {% endif %}
+                                        </td>
                                         <td class="user-role">
                                             {% if user.is_admin %}
                                                 <span class="role-badge admin">Admin</span>

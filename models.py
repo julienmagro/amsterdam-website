@@ -23,6 +23,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)  # NEW: Admin role
+    user_age = db.Column(db.Integer, nullable=True)  # NEW: User age (optional)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships - "this user has many calculations and chat messages"

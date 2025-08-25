@@ -78,6 +78,14 @@
                                    placeholder="Repeat your password">
                         </div>
                         
+                        <div class="form-group">
+                            <label for="user_age">Age (optional):</label>
+                            <input type="number" name="user_age" id="user_age" 
+                                   placeholder="Your age" min="13" max="120"
+                                   value="{{ request.form.get('user_age', '') }}">
+                            <small class="form-help">Helps us provide age-appropriate content</small>
+                        </div>
+                        
                         <button type="submit" class="auth-button">Create Account</button>
                     </form>
 

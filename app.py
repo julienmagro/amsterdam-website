@@ -168,6 +168,19 @@ def register():
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
         confirm_password = request.form.get("confirm_password", "")
+        user_age = request.form.get("user_age", "")
+        
+        # Age validation (optional field)
+        age = None
+        if user_age:
+            try:
+                age = int(user_age)
+                if age < 13 or age > 120:
+                    flash("Age must be between 13 and 120!", "error")
+                    return render_template("register.html")
+            except ValueError:
+                flash("Please enter a valid age!", "error")
+                return render_template("register.html")
         
         # Basic validation
         if not email or not password:
@@ -181,7 +194,7 @@ def register():
         else:
             try:
                 # Create new user
-                user = User(email=email)
+                user = User(email=email, user_age=age)
                 user.set_password(password)  # Hash the password
                 
                 # Save to database
