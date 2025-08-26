@@ -1190,6 +1190,36 @@ a:hover {
     color: var(--text-white);
 }
 
+/* ===== EMAIL VERIFICATION (Registration) STYLES ===== */
+
+.verification-section {
+    border: 2px solid #4CAF50;
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    background: rgba(76, 175, 80, 0.1);
+    margin: var(--spacing-lg) 0;
+}
+
+.verification-info {
+    background: rgba(76, 175, 80, 0.15);
+    border: 1px solid #4CAF50;
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    margin: var(--spacing-md) 0;
+    text-align: center;
+}
+
+.verification-notice {
+    color: #4CAF50;
+    font-weight: bold;
+    margin-bottom: var(--spacing-xs);
+}
+
+.verification-info p {
+    margin: var(--spacing-xs) 0;
+    color: var(--text-white);
+}
+
 .auth-button {
     width: 100%;
     padding: var(--spacing-lg) var(--spacing-xl);

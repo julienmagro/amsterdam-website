@@ -147,6 +147,76 @@ def verify_mfa_code(user, provided_code):
     # Check if code matches (string comparison for security)
     return user.last_mfa_code == provided_code.strip()
 
+def send_verification_email(user_email, code):
+    """
+    Send email verification code for new registrations
+    
+    Features:
+    - Welcome message for new users
+    - 15-minute expiry (reasonable for email checking)
+    - Clear instructions
+    - Professional appearance
+    - Development mode (prints code instead of sending email)
+    """
+    # Development mode - no email server configured
+    if not app.config.get('MAIL_USERNAME'):
+        print(f"\n📧 DEVELOPMENT MODE - Email Verification Code:")
+        print(f"ℹ️ Email: {user_email}")
+        print(f"🔑 Code: {code}")
+        print(f"⏰ Expires: 15 minutes")
+        print(f"\n📝 Copy this code to test the verification!\n")
+        return True
+    
+    # Production mode - send real email
+    try:
+        msg = Message(
+            subject='🔐 Amsterdam Site - Verify Your Email',
+            recipients=[user_email],
+            body=f'''Welcome to Amsterdam Discovery Site!
+
+Please verify your email address with this code:
+
+{code}
+
+This code will expire in 15 minutes.
+
+If you didn't create an account, please ignore this email.
+
+Welcome aboard!
+Amsterdam Discovery Team
+
+---
+This is an automated message. Please do not reply to this email.
+            '''
+        )
+        mail.send(msg)
+        print(f"📧 Verification email sent to {user_email}")
+        return True
+    except Exception as e:
+        print(f"❌ Verification email failed: {e}")
+        return False
+
+def verify_email_code(user, provided_code):
+    """
+    Verify email verification code for registration
+    
+    Security checks:
+    1. Code exists in database
+    2. Code hasn't expired (15 minutes)
+    3. Code matches exactly
+    4. One-time use (cleared after verification)
+    """
+    if not user.verification_code or not user.verification_expires:
+        return False
+    
+    # Check if code expired
+    if datetime.utcnow() > user.verification_expires:
+        print(f"🕒 Verification code expired for {user.email}")
+        return False
+    
+    # Check if code matches (string comparison for security)
+    return user.verification_code == provided_code.strip()
+
 # Create database tables (runs once when app starts)
 with app.app_context():
     db.create_all()
@@ -244,18 +314,22 @@ def calculation_history():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """
-    User registration
+    Two-step registration with email verification:
+    Step 1: Collect user info + send verification email
+    Step 2: Verify email code + activate account
     
-    Security considerations:
-    - Check if email already exists
-    - Hash password before storing
-    - Validate password strength (basic)
+    Security features:
+    - Email verification (anti-spam)
+    - Password hashing
+    - 15-minute code expiry
+    - Handles existing unverified users
     """
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
         confirm_password = request.form.get("confirm_password", "")
         user_age = request.form.get("user_age", "")
+        verification_code = request.form.get("verification_code", "").strip()
         
         # Age validation (optional field)
         age = None
@@ -272,29 +346,90 @@ def register():
         # Basic validation
         if not email or not password:
             flash("Email and password are required!", "error")
+            return render_template("register.html")
         elif len(password) < 6:
             flash("Password must be at least 6 characters long!", "error")
+            return render_template("register.html")
         elif password != confirm_password:
             flash("Passwords do not match!", "error")
-        elif User.query.filter_by(email=email).first():
-            flash("An account with this email already exists!", "error")
-        else:
+            return render_template("register.html")
+        
+        # Check if user already exists
+        existing_user = User.query.filter_by(email=email).first()
+        
+        if not verification_code:
+            # Step 1: Create unverified user + send verification email
+            if existing_user:
+                if existing_user.email_verified:
+                    flash("An account with this email already exists!", "error")
+                    return render_template("register.html")
+                else:
+                    # User exists but not verified - resend code
+                    user = existing_user
+                    # Update password in case they changed it
+                    user.set_password(password)
+                    if age is not None:
+                        user.user_age = age
+            else:
+                # Create new unverified user
+                try:
+                    user = User(email=email, user_age=age, email_verified=False)
+                    user.set_password(password)
+                    db.session.add(user)
+                    db.session.flush()  # Get user ID without committing
+                except Exception as e:
+                    print(f"❌ User creation error: {e}")
+                    db.session.rollback()
+                    flash("An error occurred. Please try again.", "error")
+                    return render_template("register.html")
+            
+            # Generate and send verification code
+            code = generate_mfa_code()  # Reuse existing function
+            user.verification_code = code
+            user.verification_expires = datetime.utcnow() + timedelta(minutes=15)
+            
             try:
-                # Create new user
-                user = User(email=email, user_age=age)
-                user.set_password(password)  # Hash the password
-                
-                # Save to database
-                db.session.add(user)
                 db.session.commit()
+                print(f"📧 Generated verification code for {user.email}: {code}")
                 
-                flash("Account created successfully! Please log in.", "success")
-                return redirect(url_for("login"))
-                
+                if send_verification_email(user.email, code):
+                    flash("📧 Verification code sent to your email! Please check your inbox.", "info")
+                    return render_template("register.html", show_verification=True, email=email)
+                else:
+                    flash("❌ Failed to send verification code. Please try again.", "error")
+                    return render_template("register.html")
+                    
             except Exception as e:
-                print(f"❌ Registration error: {e}")
+                print(f"❌ Database error during verification setup: {e}")
                 db.session.rollback()
                 flash("An error occurred. Please try again.", "error")
+                return render_template("register.html")
+        
+        else:
+            # Step 2: Verify email code + activate account
+            if not existing_user:
+                flash("Please start registration again.", "error")
+                return render_template("register.html")
+            
+            if verify_email_code(existing_user, verification_code):
+                # Activate account
+                existing_user.email_verified = True
+                existing_user.verification_code = None
+                existing_user.verification_expires = None
+                
+                try:
+                    db.session.commit()
+                    flash("✅ Email verified! Your account is now active. Please log in.", "success")
+                    return redirect(url_for("login"))
+                    
+                except Exception as e:
+                    print(f"❌ Account activation error: {e}")
+                    db.session.rollback()
+                    flash("An error occurred. Please try again.", "error")
+                    return render_template("register.html", show_verification=True, email=email)
+            else:
+                flash("❌ Invalid or expired verification code!", "error")
+                return render_template("register.html", show_verification=True, email=email)
     
     return render_template("register.html")
 
@@ -328,6 +463,11 @@ def login():
         if not user or not user.check_password(password):
             flash("Invalid email or password!", "error")
             return render_template("login.html")
+        
+        # Check if email is verified
+        if not user.email_verified:
+            flash("📧 Please verify your email address before logging in. Check your inbox for the verification code.", "error")
+            return redirect(url_for("register"))
         
         print(f"🔑 Step 1 passed for {user.email}, MFA enabled: {user.mfa_enabled}")
         

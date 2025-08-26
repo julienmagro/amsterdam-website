@@ -25,7 +25,12 @@ class User(UserMixin, db.Model):
     is_admin = db.Column(db.Boolean, default=False, nullable=False)  # NEW: Admin role
     user_age = db.Column(db.Integer, nullable=True)  # NEW: User age (optional)
     
-    # MFA (Multi-Factor Authentication) fields
+    # Email Verification fields (for registration)
+    email_verified = db.Column(db.Boolean, default=False, nullable=False)  # Has email been verified?
+    verification_code = db.Column(db.String(10), nullable=True)  # Email verification code
+    verification_expires = db.Column(db.DateTime, nullable=True)  # When verification expires
+    
+    # MFA (Multi-Factor Authentication) fields (optional login security)
     mfa_enabled = db.Column(db.Boolean, default=False, nullable=False)  # User preference for MFA
     last_mfa_code = db.Column(db.String(10), nullable=True)  # Current verification code
     mfa_code_expires = db.Column(db.DateTime, nullable=True)  # When code expires

@@ -86,7 +86,37 @@
                             <small class="form-help">Helps us provide age-appropriate content</small>
                         </div>
                         
-                        <button type="submit" class="auth-button">Create Account</button>
+                        {% if show_verification %}
+                        <!-- Email Verification Step -->
+                        <div class="form-group verification-section">
+                            <label for="verification_code">📧 Email Verification Code:</label>
+                            <input type="text" name="verification_code" id="verification_code" required 
+                                   placeholder="Enter 6-digit code"
+                                   maxlength="6" pattern="[0-9]{6}"
+                                   autocomplete="one-time-code"
+                                   class="mfa-input">
+                            <small class="form-help">
+                                📬 Check your email inbox for the 6-digit verification code.<br>
+                                ⏰ Code expires in 15 minutes.
+                            </small>
+                            
+                            <!-- Hidden fields to maintain form state -->
+                            <input type="hidden" name="email" value="{{ email }}">
+                        </div>
+
+                        <div class="verification-info">
+                            <p class="verification-notice">📧 <strong>Email Verification Required</strong></p>
+                            <p>We've sent a verification code to <strong>{{ email }}</strong> to confirm your email address.</p>
+                        </div>
+                        {% endif %}
+                        
+                        <button type="submit" class="auth-button">
+                            {% if show_verification %}
+                                ✅ Verify Email & Complete Registration
+                            {% else %}
+                                📝 Create Account
+                            {% endif %}
+                        </button>
                     </form>
 
                     <div class="auth-links">
