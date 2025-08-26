@@ -1,8 +1,11 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, abort
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_mail import Mail, Message
 from functools import wraps
 from models import db, User, Calculation, ChatMessage
 import os
+import random
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
@@ -10,6 +13,15 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///amsterdam.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Saves memory
+
+# Email configuration for MFA
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = os.environ.get('GMAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('GMAIL_APP_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('GMAIL_USERNAME')
 
 # Production security settings
 if os.environ.get('FLASK_ENV') == 'production':
@@ -19,6 +31,9 @@ if os.environ.get('FLASK_ENV') == 'production':
 
 # Initialize database with app
 db.init_app(app)
+
+# Initialize Flask-Mail
+mail = Mail(app)
 
 # Initialize Flask-Login
 login_manager = LoginManager()
@@ -59,6 +74,78 @@ def admin_required(f):
             abort(403)  # Forbidden
         return f(*args, **kwargs)
     return decorated_function
+
+# ===== MFA (Multi-Factor Authentication) Helper Functions =====
+
+def generate_mfa_code():
+    """
+    Generate a secure 6-digit MFA code
+    
+    Why 6 digits?
+    - 1 million possible combinations
+    - 5-minute expiry makes brute force impractical
+    - Industry standard (Google, Microsoft, etc.)
+    """
+    return str(random.randint(100000, 999999))
+
+def send_mfa_email(user_email, code):
+    """
+    Send MFA verification code via email
+    
+    Security considerations:
+    - Uses secure Gmail SMTP with app password
+    - Clear expiry time (5 minutes)
+    - Professional appearance
+    - No sensitive info in email logs
+    """
+    try:
+        msg = Message(
+            subject='🔐 Amsterdam Site - Your Login Code',
+            recipients=[user_email],
+            body=f'''Hello!
+
+Your verification code for Amsterdam Discovery Site is:
+
+{code}
+
+This code will expire in 5 minutes for your security.
+
+If you didn't request this code, please ignore this email and consider changing your password.
+
+Best regards,
+Amsterdam Discovery Team
+
+---
+This is an automated message. Please do not reply to this email.
+            '''
+        )
+        mail.send(msg)
+        print(f"📧 MFA code sent to {user_email}")
+        return True
+    except Exception as e:
+        print(f"❌ Email sending failed: {e}")
+        return False
+
+def verify_mfa_code(user, provided_code):
+    """
+    Verify if the provided MFA code is valid
+    
+    Security checks:
+    1. Code exists in database
+    2. Code hasn't expired (5 minutes)
+    3. Code matches exactly
+    4. One-time use (cleared after verification)
+    """
+    if not user.last_mfa_code or not user.mfa_code_expires:
+        return False
+    
+    # Check if code expired
+    if datetime.utcnow() > user.mfa_code_expires:
+        print(f"🕒 MFA code expired for {user.email}")
+        return False
+    
+    # Check if code matches (string comparison for security)
+    return user.last_mfa_code == provided_code.strip()
 
 # Create database tables (runs once when app starts)
 with app.app_context():
@@ -214,31 +301,92 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """
-    User login
+    Two-step authentication login:
+    Step 1: Email + Password verification
+    Step 2: MFA code verification (if enabled)
     
-    Security:
-    - Check email exists
-    - Verify password hash
-    - Create secure session
+    Security features:
+    - Password hash verification
+    - Optional MFA via email
+    - Time-limited codes (5 minutes)
+    - One-time use codes
+    - Secure session creation
     """
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
+        mfa_code = request.form.get("mfa_code", "").strip()
         
+        # Basic validation
         if not email or not password:
             flash("Email and password are required!", "error")
-        else:
-            user = User.query.filter_by(email=email).first()
+            return render_template("login.html")
+        
+        # Step 1: Verify email and password
+        user = User.query.filter_by(email=email).first()
+        
+        if not user or not user.check_password(password):
+            flash("Invalid email or password!", "error")
+            return render_template("login.html")
+        
+        print(f"🔑 Step 1 passed for {user.email}, MFA enabled: {user.mfa_enabled}")
+        
+        # Step 2: Check if MFA is required
+        if not user.mfa_enabled:
+            # No MFA required - direct login
+            login_user(user)
+            flash(f"Welcome back, {user.email}!", "success")
+            next_page = request.args.get('next')
+            return redirect(next_page) if next_page else redirect(url_for('home'))
+        
+        # MFA is enabled - handle two-step process
+        if not mfa_code:
+            # First visit - send MFA code
+            code = generate_mfa_code()
+            user.last_mfa_code = code
+            user.mfa_code_expires = datetime.utcnow() + timedelta(minutes=5)
             
-            if user and user.check_password(password):
-                login_user(user)
-                flash(f"Welcome back, {user.email}!", "success")
+            try:
+                db.session.commit()
+                print(f"📧 Generated MFA code for {user.email}: {code}")
                 
-                # Redirect to where they were trying to go, or home
-                next_page = request.args.get('next')
-                return redirect(next_page) if next_page else redirect(url_for('home'))
+                if send_mfa_email(user.email, code):
+                    flash("📧 Verification code sent to your email! Please check your inbox.", "info")
+                    return render_template("login.html", show_mfa=True, email=email)
+                else:
+                    flash("❌ Failed to send verification code. Please try again.", "error")
+                    return render_template("login.html")
+                    
+            except Exception as e:
+                print(f"❌ Database error during MFA setup: {e}")
+                db.session.rollback()
+                flash("An error occurred. Please try again.", "error")
+                return render_template("login.html")
+        
+        else:
+            # Second visit - verify MFA code
+            if verify_mfa_code(user, mfa_code):
+                # Clear used code for security
+                user.last_mfa_code = None
+                user.mfa_code_expires = None
+                
+                try:
+                    db.session.commit()
+                    
+                    # Successful login
+                    login_user(user)
+                    flash(f"✅ Welcome back, {user.email}!", "success")
+                    next_page = request.args.get('next')
+                    return redirect(next_page) if next_page else redirect(url_for('home'))
+                    
+                except Exception as e:
+                    print(f"❌ Database error during login: {e}")
+                    db.session.rollback()
+                    flash("An error occurred. Please try again.", "error")
+                    return render_template("login.html", show_mfa=True, email=email)
             else:
-                flash("Invalid email or password!", "error")
+                flash("❌ Invalid or expired verification code! Please try again.", "error")
+                return render_template("login.html", show_mfa=True, email=email)
     
     return render_template("login.html")
 
@@ -255,6 +403,43 @@ def logout():
     logout_user()
     flash("You have been logged out.", "info")
     return redirect(url_for("home"))
+
+@app.route("/settings/mfa", methods=["GET", "POST"])
+@login_required
+def mfa_settings():
+    """
+    MFA (Multi-Factor Authentication) Settings
+    
+    Features:
+    - Enable/disable email verification
+    - View current MFA status
+    - Test MFA functionality
+    """
+    if request.method == "POST":
+        action = request.form.get("action")
+        
+        try:
+            if action == "enable":
+                current_user.mfa_enabled = True
+                db.session.commit()
+                flash("✅ Email verification enabled! You'll receive codes on your next login.", "success")
+                print(f"🔐 MFA enabled for {current_user.email}")
+                
+            elif action == "disable":
+                current_user.mfa_enabled = False
+                # Clear any existing codes for security
+                current_user.last_mfa_code = None
+                current_user.mfa_code_expires = None
+                db.session.commit()
+                flash("❌ Email verification disabled. You can re-enable it anytime.", "info")
+                print(f"🔓 MFA disabled for {current_user.email}")
+                
+        except Exception as e:
+            print(f"❌ MFA settings error: {e}")
+            db.session.rollback()
+            flash("Error updating MFA settings. Please try again.", "error")
+    
+    return render_template("mfa_settings.html")
 
 # NEW: Admin Dashboard Routes
 @app.route("/admin")

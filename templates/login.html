@@ -68,10 +68,41 @@
                         <div class="form-group">
                             <label for="password">Password:</label>
                             <input type="password" name="password" id="password" required 
-                                   placeholder="Your password">
+                                   placeholder="Your password"
+                                   value="{% if show_mfa %}{{ request.form.get('password', '') }}{% endif %}">
                         </div>
                         
-                        <button type="submit" class="auth-button">Login</button>
+                        {% if show_mfa %}
+                        <!-- MFA Verification Step -->
+                        <div class="form-group mfa-section">
+                            <label for="mfa_code">📧 Email Verification Code:</label>
+                            <input type="text" name="mfa_code" id="mfa_code" required 
+                                   placeholder="Enter 6-digit code"
+                                   maxlength="6" pattern="[0-9]{6}"
+                                   autocomplete="one-time-code"
+                                   class="mfa-input">
+                            <small class="form-help">
+                                📬 Check your email inbox for the 6-digit verification code.<br>
+                                ⏰ Code expires in 5 minutes for security.
+                            </small>
+                            
+                            <!-- Hidden fields to maintain form state -->
+                            <input type="hidden" name="email" value="{{ email }}">
+                        </div>
+                        
+                        <div class="mfa-info">
+                            <p class="mfa-notice">🔐 <strong>Two-Factor Authentication Active</strong></p>
+                            <p>We've sent a verification code to <strong>{{ email }}</strong> for added security.</p>
+                        </div>
+                        {% endif %}
+                        
+                        <button type="submit" class="auth-button">
+                            {% if show_mfa %}
+                                🔓 Verify & Login
+                            {% else %}
+                                🔑 Login
+                            {% endif %}
+                        </button>
                     </form>
 
                     <div class="auth-links">

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Settings - Amsterdam</title>
+    <meta name="description" content="Manage your two-factor authentication and security settings.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/amsterdam-flag.svg') }}">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/main.css') }}">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-container">
+                <a href="{{ url_for('home') }}" class="nav-logo">
+                    <img src="{{ url_for('static', filename='assets/amsterdam-flag.svg') }}" alt="Amsterdam flag" class="flag-icon">
+                    <span class="nav-title">Amsterdam</span>
+                </a>
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('home') }}" class="nav-link">Home</a></li>
+                    <li><a href="{{ url_for('calculator') }}" class="nav-link">Calculator</a></li>
+                    <li><a href="#" class="nav-link active">Security</a></li>
+                </ul>
+                
+                <!-- User menu -->
+                {% include 'user_menu.html' %}
+            </div>
+        </nav>
+    </header>
+
+    <main class="main">
+        <section class="page-hero">
+            <div class="page-container">
+                <h1 class="page-title">🔐 Security Settings</h1>
+                <p class="page-subtitle">Manage your two-factor authentication and account security</p>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="content-container">
+                
+                <!-- Flash messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flash-messages">
+                            {% for category, message in messages %}
+                                <div class="flash-message flash-{{ category }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <div class="auth-container">
+                    
+                    <!-- Current MFA Status -->
+                    <div class="mfa-status">
+                        <h2>📧 Email Verification Status</h2>
+                        {% if current_user.mfa_enabled %}
+                            <div class="status-enabled">
+                                <p>✅ <strong>Email verification is ENABLED</strong></p>
+                                <p>You'll receive a 6-digit code via email each time you log in.</p>
+                            </div>
+                        {% else %}
+                            <div class="status-disabled">
+                                <p>❌ <strong>Email verification is DISABLED</strong></p>
+                                <p>You can log in with just your email and password.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- MFA Controls -->
+                    <div class="mfa-controls">
+                        <h3>🔧 Security Controls</h3>
+                        
+                        {% if current_user.mfa_enabled %}
+                            <form method="POST" class="mfa-form">
+                                <input type="hidden" name="action" value="disable">
+                                <button type="submit" class="auth-button disable-btn" 
+                                        onclick="return confirm('Are you sure you want to disable email verification? This will make your account less secure.')">
+                                    🔓 Disable Email Verification
+                                </button>
+                            </form>
+                        {% else %}
+                            <form method="POST" class="mfa-form">
+                                <input type="hidden" name="action" value="enable">
+                                <button type="submit" class="auth-button enable-btn">
+                                    🔐 Enable Email Verification
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+
+                    <!-- Security Information -->
+                    <div class="auth-info">
+                        <h3>🛡️ Why Use Email Verification?</h3>
+                        <ul>
+                            <li>🔒 <strong>Enhanced Security:</strong> Even if someone steals your password, they can't access your account</li>
+                            <li>📧 <strong>Email Protection:</strong> Verification codes are sent to your email address</li>
+                            <li>⏰ <strong>Time-Limited:</strong> Codes expire in 5 minutes for maximum security</li>
+                            <li>🔄 <strong>One-Time Use:</strong> Each code works only once</li>
+                            <li>📱 <strong>Industry Standard:</strong> Used by Google, Microsoft, and all major platforms</li>
+                        </ul>
+                        
+                        <div class="security-note">
+                            <p><strong>Note:</strong> Email verification is optional but highly recommended for account security.</p>
+                        </div>
+                    </div>
+
+                    <div class="auth-links">
+                        <p><a href="{{ url_for('calculation_history') }}">📊 View My Calculations</a></p>
+                        <p><a href="{{ url_for('home') }}">← Back to home</a></p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <p class="footer-text">&copy; 2024 Amsterdam Discovery Site. Your security is our priority! 🔒</p>
+        </div>
+    </footer>
+
+    <!-- User menu JavaScript -->
+    {% include 'user_menu_script.html' %}
+</body>
+</html>

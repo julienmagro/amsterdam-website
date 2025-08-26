@@ -1095,6 +1095,101 @@ a:hover {
     font-style: italic;
 }
 
+/* ===== MFA (Multi-Factor Authentication) STYLES ===== */
+
+.mfa-section {
+    border: 2px solid var(--accent-gold);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    background: rgba(255, 215, 0, 0.1);
+    margin: var(--spacing-lg) 0;
+}
+
+.mfa-input {
+    text-align: center;
+    font-size: var(--font-size-xl);
+    font-weight: bold;
+    letter-spacing: 0.5em;
+    font-family: 'Courier New', monospace;
+}
+
+.mfa-info {
+    background: rgba(255, 215, 0, 0.15);
+    border: 1px solid var(--accent-gold);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    margin: var(--spacing-md) 0;
+    text-align: center;
+}
+
+.mfa-notice {
+    color: var(--accent-gold);
+    font-weight: bold;
+    margin-bottom: var(--spacing-xs);
+}
+
+.mfa-info p {
+    margin: var(--spacing-xs) 0;
+    color: var(--text-white);
+}
+
+/* ===== MFA SETTINGS PAGE STYLES ===== */
+
+.mfa-status {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    text-align: center;
+}
+
+.status-enabled {
+    color: #4CAF50;
+}
+
+.status-disabled {
+    color: #FF6B6B;
+}
+
+.mfa-controls {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    text-align: center;
+}
+
+.mfa-form {
+    margin: var(--spacing-md) 0;
+}
+
+.enable-btn {
+    background: #4CAF50;
+    color: white;
+}
+
+.enable-btn:hover {
+    background: #45a049;
+}
+
+.disable-btn {
+    background: #FF6B6B;
+    color: white;
+}
+
+.disable-btn:hover {
+    background: #ff5252;
+}
+
+.security-note {
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid var(--accent-gold);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+    color: var(--text-white);
+}
+
 .auth-button {
     width: 100%;
     padding: var(--spacing-lg) var(--spacing-xl);

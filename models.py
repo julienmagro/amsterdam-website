@@ -24,6 +24,12 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)  # NEW: Admin role
     user_age = db.Column(db.Integer, nullable=True)  # NEW: User age (optional)
+    
+    # MFA (Multi-Factor Authentication) fields
+    mfa_enabled = db.Column(db.Boolean, default=False, nullable=False)  # User preference for MFA
+    last_mfa_code = db.Column(db.String(10), nullable=True)  # Current verification code
+    mfa_code_expires = db.Column(db.DateTime, nullable=True)  # When code expires
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships - "this user has many calculations and chat messages"
