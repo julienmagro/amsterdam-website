@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: amsterdam-staging
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: FLASK_ENV
+        value: staging
+      - key: ENVIRONMENT
+        value: staging
+      - key: GMAIL_USERNAME
+        fromSecret: gmail_username
+      - key: GMAIL_APP_PASSWORD
+        fromSecret: gmail_app_password
+        
+  - type: pgsql
+    name: amsterdam-staging-db
+    plan: free
+    databaseName: amsterdam_staging
+    user: amsterdam_staging_user
