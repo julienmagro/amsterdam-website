@@ -35,8 +35,13 @@
     <main class="main">
         <section class="page-hero">
             <div class="page-container">
+                {% if show_verification %}
+                <h1 class="page-title">📧 Verify Your Email</h1>
+                <p class="page-subtitle">Enter the verification code sent to {{ email }}</p>
+                {% else %}
                 <h1 class="page-title">🔐 Create Account</h1>
                 <p class="page-subtitle">Join Amsterdam Discovery to save your calculations and chat with our AI guide</p>
+                {% endif %}
             </div>
         </section>
 
@@ -58,6 +63,32 @@
                     {% endwith %}
 
                     <form method="POST" class="auth-form">
+                        {% if show_verification %}
+                        <!-- Email Verification Step ONLY -->
+                        <div class="form-group verification-section">
+                            <label for="verification_code">📧 Email Verification Code:</label>
+                            <input type="text" name="verification_code" id="verification_code" required 
+                                   placeholder="Enter 6-digit code"
+                                   maxlength="6" pattern="[0-9]{6}"
+                                   autocomplete="one-time-code"
+                                   class="mfa-input"
+                                   autofocus>
+                            <small class="form-help">
+                                📬 Check your email inbox for the 6-digit verification code.<br>
+                                ⏰ Code expires in 15 minutes.
+                            </small>
+                            
+                            <!-- Hidden fields to maintain form state -->
+                            <input type="hidden" name="email" value="{{ email }}">
+                        </div>
+
+                        <div class="verification-info">
+                            <p class="verification-notice">📧 <strong>Email Verification Required</strong></p>
+                            <p>We've sent a verification code to <strong>{{ email }}</strong> to confirm your email address.</p>
+                        </div>
+                        
+                        {% else %}
+                        <!-- Registration Form -->
                         <div class="form-group">
                             <label for="email">Email Address:</label>
                             <input type="email" name="email" id="email" required 
@@ -84,29 +115,6 @@
                                    placeholder="Your age" min="13" max="120"
                                    value="{{ request.form.get('user_age', '') }}">
                             <small class="form-help">Helps us provide age-appropriate content</small>
-                        </div>
-                        
-                        {% if show_verification %}
-                        <!-- Email Verification Step -->
-                        <div class="form-group verification-section">
-                            <label for="verification_code">📧 Email Verification Code:</label>
-                            <input type="text" name="verification_code" id="verification_code" required 
-                                   placeholder="Enter 6-digit code"
-                                   maxlength="6" pattern="[0-9]{6}"
-                                   autocomplete="one-time-code"
-                                   class="mfa-input">
-                            <small class="form-help">
-                                📬 Check your email inbox for the 6-digit verification code.<br>
-                                ⏰ Code expires in 15 minutes.
-                            </small>
-                            
-                            <!-- Hidden fields to maintain form state -->
-                            <input type="hidden" name="email" value="{{ email }}">
-                        </div>
-
-                        <div class="verification-info">
-                            <p class="verification-notice">📧 <strong>Email Verification Required</strong></p>
-                            <p>We've sent a verification code to <strong>{{ email }}</strong> to confirm your email address.</p>
                         </div>
                         {% endif %}
                         
