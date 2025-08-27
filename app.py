@@ -419,8 +419,11 @@ def register():
                 
                 try:
                     db.session.commit()
-                    flash("✅ Email verified! Your account is now active. Please log in.", "success")
-                    return redirect(url_for("login"))
+                    
+                    # Auto-login after email verification (improved UX)
+                    login_user(existing_user)
+                    flash("✅ Welcome! Your account is now active and you're logged in.", "success")
+                    return redirect(url_for("home"))
                     
                 except Exception as e:
                     print(f"❌ Account activation error: {e}")
