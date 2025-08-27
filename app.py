@@ -331,33 +331,34 @@ def register():
         user_age = request.form.get("user_age", "")
         verification_code = request.form.get("verification_code", "").strip()
         
-        # Age validation (optional field)
-        age = None
-        if user_age:
-            try:
-                age = int(user_age)
-                if age < 13 or age > 120:
-                    flash("Age must be between 13 and 120!", "error")
-                    return render_template("register.html")
-            except ValueError:
-                flash("Please enter a valid age!", "error")
-                return render_template("register.html")
-        
-        # Basic validation
-        if not email or not password:
-            flash("Email and password are required!", "error")
-            return render_template("register.html")
-        elif len(password) < 6:
-            flash("Password must be at least 6 characters long!", "error")
-            return render_template("register.html")
-        elif password != confirm_password:
-            flash("Passwords do not match!", "error")
-            return render_template("register.html")
-        
-        # Check if user already exists
-        existing_user = User.query.filter_by(email=email).first()
-        
         if not verification_code:
+            # Step 1: Registration form validation
+            
+            # Age validation (optional field)
+            age = None
+            if user_age:
+                try:
+                    age = int(user_age)
+                    if age < 13 or age > 120:
+                        flash("Age must be between 13 and 120!", "error")
+                        return render_template("register.html")
+                except ValueError:
+                    flash("Please enter a valid age!", "error")
+                    return render_template("register.html")
+            
+            # Basic validation
+            if not email or not password:
+                flash("Email and password are required!", "error")
+                return render_template("register.html")
+            elif len(password) < 6:
+                flash("Password must be at least 6 characters long!", "error")
+                return render_template("register.html")
+            elif password != confirm_password:
+                flash("Passwords do not match!", "error")
+                return render_template("register.html")
+            
+            # Check if user already exists
+            existing_user = User.query.filter_by(email=email).first()
             # Step 1: Create unverified user + send verification email
             if existing_user:
                 if existing_user.email_verified:
@@ -407,6 +408,9 @@ def register():
         
         else:
             # Step 2: Verify email code + activate account
+            # Find user by email (since form only sends email + code)
+            existing_user = User.query.filter_by(email=email).first()
+            
             if not existing_user:
                 flash("Please start registration again.", "error")
                 return render_template("register.html")
@@ -419,8 +423,11 @@ def register():
                 
                 try:
                     db.session.commit()
-                    flash("✅ Email verified! Your account is now active. Please log in.", "success")
-                    return redirect(url_for("login"))
+                    
+                    # Auto-login after email verification (improved UX)
+                    login_user(existing_user)
+                    flash("✅ Welcome! Your account is now active and you're logged in.", "success")
+                    return redirect(url_for("home"))
                     
                 except Exception as e:
                     print(f"❌ Account activation error: {e}")
