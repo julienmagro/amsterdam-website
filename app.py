@@ -1,11 +1,21 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, abort
+from flask import Flask, render_template, request, redirect, url_for, flash, abort, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
+from flask_dance.contrib.google import make_google_blueprint, google
+from flask_dance.consumer.storage.sqla import OAuthConsumerMixin, SQLAlchemyStorage
 from functools import wraps
-from models import db, User, Calculation, ChatMessage
+from models import db, User, Calculation, ChatMessage, OAuthToken
 import os
 import random
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Allow OAuth over HTTP for local development (NEVER in production!)
+import os
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 app = Flask(__name__)
 
@@ -22,6 +32,106 @@ app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_USERNAME'] = os.environ.get('GMAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.environ.get('GMAIL_APP_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('GMAIL_USERNAME')
+
+# Google OAuth Configuration
+app.config['GOOGLE_OAUTH_CLIENT_ID'] = os.environ.get('GOOGLE_CLIENT_ID')
+app.config['GOOGLE_OAUTH_CLIENT_SECRET'] = os.environ.get('GOOGLE_CLIENT_SECRET')
+
+# Debug: Check if environment variables are loading
+print(f"🔍 DEBUG: GOOGLE_CLIENT_ID = {app.config['GOOGLE_OAUTH_CLIENT_ID']}")
+print(f"🔍 DEBUG: GOOGLE_CLIENT_SECRET = {app.config['GOOGLE_OAUTH_CLIENT_SECRET']}")
+
+# Create Google OAuth blueprint
+google_bp = make_google_blueprint(
+    client_id=app.config['GOOGLE_OAUTH_CLIENT_ID'],
+    client_secret=app.config['GOOGLE_OAUTH_CLIENT_SECRET'],
+    scope=['https://www.googleapis.com/auth/userinfo.profile', 
+           'https://www.googleapis.com/auth/userinfo.email', 
+           'openid']
+)
+app.register_blueprint(google_bp, url_prefix='/auth')
+
+# Set up Flask-Dance storage
+google_bp.storage = SQLAlchemyStorage(OAuthToken, db.session, user=current_user)
+
+# Flask-Dance OAuth event handlers
+from flask_dance.consumer.storage.sqla import OAuthConsumerMixin, SQLAlchemyStorage
+from flask_dance.consumer import oauth_authorized, oauth_error
+
+@oauth_authorized.connect_via(google_bp)
+def google_logged_in(blueprint, token):
+    """
+    Handle successful Google OAuth login
+    """
+    if not token:
+        flash('Failed to log in with Google.', 'error')
+        return False
+
+    resp = blueprint.session.get('/oauth2/v1/userinfo')
+    if not resp.ok:
+        flash('Failed to fetch user info from Google.', 'error')
+        return False
+
+    google_info = resp.json()
+    google_id = google_info['id']
+    email = google_info['email']
+    first_name = google_info.get('given_name', '')
+    last_name = google_info.get('family_name', '')
+    profile_picture = google_info.get('picture', '')
+
+    print(f"🔐 Google OAuth success: {email} ({google_id})")
+
+    # Find or create user
+    user = User.query.filter_by(email=email).first()
+    
+    if not user:
+        # Create new user
+        user = User(
+            email=email,
+            google_id=google_id,
+            first_name=first_name,
+            last_name=last_name,
+            profile_picture=profile_picture,
+            email_verified=True,  # Google emails are pre-verified
+            password_hash=None    # No password for Google users
+        )
+        db.session.add(user)
+        db.session.commit()
+        print(f"👤 New Google user created: {email}")
+        
+        # Log in the new user
+        login_user(user)
+        flash(f"🎉 Account created! Welcome to Amsterdam Discovery, {user.get_display_name()}!", "success")
+        
+    else:
+        # Update existing user with Google info if needed
+        if not user.google_id:
+            user.google_id = google_id
+            user.profile_picture = profile_picture
+            user.first_name = first_name
+            user.last_name = last_name
+            user.email_verified = True
+            db.session.commit()
+            print(f"🔗 Linked existing user {email} with Google")
+            
+            # Log in existing user (newly linked)
+            login_user(user)
+            flash(f"✅ Google account linked! Welcome back, {user.get_display_name()}!", "success")
+        else:
+            # Log in existing Google user
+            login_user(user)
+            flash(f"✅ Welcome back, {user.get_display_name()}!", "success")
+    
+    # Don't save the token in the OAuth storage
+    return False
+
+@oauth_error.connect_via(google_bp)
+def google_error(blueprint, message, response):
+    """
+    Handle Google OAuth errors
+    """
+    print(f"❌ Google OAuth error: {message}")
+    flash('Google login failed. Please try again.', 'error')
 
 # Production security settings
 if os.environ.get('FLASK_ENV') == 'production':
@@ -587,6 +697,8 @@ def mfa_settings():
             flash("Error updating MFA settings. Please try again.", "error")
     
     return render_template("mfa_settings.html")
+
+# Google OAuth is now handled automatically by Flask-Dance event handlers above
 
 # NEW: Admin Dashboard Routes
 @app.route("/admin")

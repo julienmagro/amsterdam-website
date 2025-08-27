@@ -1561,6 +1561,16 @@ a:hover {
     font-weight: 600;
 }
 
+.google-badge {
+    background: #4285F4;
+    color: white;
+    padding: 2px var(--spacing-xs);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    margin-right: var(--spacing-xs);
+}
+
 .role-badge {
     padding: var(--spacing-xs) var(--spacing-sm);
     border-radius: var(--border-radius);
@@ -1681,5 +1691,91 @@ a:hover {
     
     .user-actions {
         flex-direction: column;
+    }
+}
+
+/* ===== GOOGLE OAUTH STYLES ===== */
+
+.auth-divider {
+    position: relative;
+    text-align: center;
+    margin: var(--spacing-xl) 0;
+}
+
+.auth-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.3);
+    z-index: 1;
+}
+
+.divider-text {
+    background: var(--primary-red);
+    color: var(--text-light-gray);
+    padding: 0 var(--spacing-md);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    position: relative;
+    z-index: 2;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.google-auth {
+    margin-bottom: var(--spacing-xl);
+}
+
+.google-login-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: #ffffff;
+    color: #1f1f1f;
+    border: 2px solid #dadce0;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    font-size: var(--font-size-lg);
+    text-decoration: none;
+    transition: var(--transition);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    font-family: 'Roboto', var(--font-family);
+}
+
+.google-login-btn:hover {
+    background: #f8f9fa;
+    border-color: #c6c6c6;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+    color: #1f1f1f;
+}
+
+.google-login-btn:active {
+    background: #f1f3f4;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    transform: translateY(0);
+}
+
+.google-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+}
+
+/* Mobile adjustments for Google OAuth */
+@media (max-width: 768px) {
+    .google-login-btn {
+        padding: var(--spacing-md);
+        font-size: var(--font-size-base);
+    }
+    
+    .divider-text {
+        font-size: var(--font-size-xs);
     }
 }
