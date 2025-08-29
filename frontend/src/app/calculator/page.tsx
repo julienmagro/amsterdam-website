@@ -44,7 +44,7 @@ export default function CalculatorPage() {
 
       setResult(response.data);
     } catch (error: unknown) {
-      setError(error.response?.data?.error || 'Calculation failed');
+      setError((error as any)?.response?.data?.error || 'Calculation failed');
     } finally {
       setIsLoading(false);
     }

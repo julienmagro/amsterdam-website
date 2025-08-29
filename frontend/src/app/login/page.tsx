@@ -29,7 +29,7 @@ export default function LoginPage() {
       await login(email, password);
       router.push('/calculator');
     } catch (error: unknown) {
-      setError(error.message);
+      setError((error as any)?.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }

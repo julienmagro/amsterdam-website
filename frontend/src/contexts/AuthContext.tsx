@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAuthToken(access_token);
       setUser(userData);
     } catch (error: unknown) {
-      throw new Error(error.response?.data?.error || 'Login failed');
+      throw new Error((error as any)?.response?.data?.error || 'Login failed');
     }
   };
 
@@ -95,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Fallback for production (verification required)
       return { success: false, user_id: response.data.user?.id };
     } catch (error: unknown) {
-      throw new Error(error.response?.data?.error || 'Registration failed');
+      throw new Error((error as any)?.response?.data?.error || 'Registration failed');
     }
   };
 
@@ -107,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAuthToken(access_token);
       setUser(userData);
     } catch (error: unknown) {
-      throw new Error(error.response?.data?.error || 'Email verification failed');
+      throw new Error((error as any)?.response?.data?.error || 'Email verification failed');
     }
   };
 
