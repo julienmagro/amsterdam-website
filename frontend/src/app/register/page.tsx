@@ -62,7 +62,7 @@ export default function RegisterPage() {
         setUserId(response.user_id);
         setStep('verify');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError(error.message);
     } finally {
       setIsLoading(false);
@@ -79,7 +79,7 @@ export default function RegisterPage() {
     try {
       await verifyEmail(userId, verificationCode);
       router.push('/calculator');
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError(error.message);
     } finally {
       setIsLoading(false);

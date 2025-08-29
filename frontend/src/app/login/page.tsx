@@ -28,7 +28,7 @@ export default function LoginPage() {
     try {
       await login(email, password);
       router.push('/calculator');
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError(error.message);
     } finally {
       setIsLoading(false);
@@ -145,7 +145,7 @@ export default function LoginPage() {
             {/* Links */}
             <div className="text-center mt-8">
               <p className="mb-2" style={{ color: 'var(--text-light-gray)' }}>
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <Link href="/register" className="font-medium transition-all duration-300" style={{ color: 'var(--accent-gold)' }}>
                   Sign up here
                 </Link>

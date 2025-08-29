@@ -79,7 +79,8 @@ export default function ProfilePage() {
             <div className="glass-card mb-8 text-center">
               <div className="flex items-center justify-center mb-6">
                 {user.profile_picture ? (
-                  <img 
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
                     src={user.profile_picture} 
                     alt="Profile Picture"
                     className="w-24 h-24 rounded-full border-4 border-yellow-400"
@@ -271,7 +272,7 @@ export default function ProfilePage() {
                       <div className="flex items-center gap-2">
                         <span className="text-green-400">✓</span>
                         <span style={{ color: 'var(--text-light-gray)' }}>
-                          Protected by Google's security systems
+                          Protected by Google&apos;s security systems
                         </span>
                       </div>
                     )}

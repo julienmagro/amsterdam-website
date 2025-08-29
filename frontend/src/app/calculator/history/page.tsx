@@ -37,7 +37,7 @@ export default function CalculationHistoryPage() {
       try {
         const response = await calculatorAPI.getHistory();
         setHistoryData(response.data);
-      } catch (error: any) {
+      } catch (error: unknown) {
         setError(error.response?.data?.error || 'Failed to load calculation history');
       } finally {
         setIsLoading(false);

@@ -46,7 +46,7 @@ export default function WaterPage() {
               Amsterdam Water Life
             </h1>
             <p className="text-xl" style={{ color: 'var(--text-light-gray)' }}>
-              Explore the aquatic ecosystem of Amsterdam's famous canals
+              Explore the aquatic ecosystem of Amsterdam&apos;s famous canals
             </p>
           </div>
         </section>
@@ -108,7 +108,7 @@ export default function WaterPage() {
                     <p className="text-lg leading-relaxed" style={{ color: 'var(--text-light-gray)' }}>
                       Amsterdam continues to invest in water quality improvements and canal ecosystem preservation, 
                       ensuring that these historic waterways remain a vibrant habitat for aquatic life while 
-                      serving the city's transportation and cultural needs.
+                      serving the city&apos;s transportation and cultural needs.
                     </p>
                   </div>
                 </div>

@@ -43,7 +43,7 @@ export default function CalculatorPage() {
       });
 
       setResult(response.data);
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError(error.response?.data?.error || 'Calculation failed');
     } finally {
       setIsLoading(false);

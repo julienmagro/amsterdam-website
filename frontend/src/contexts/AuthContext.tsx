@@ -25,7 +25,7 @@ interface AuthContextType {
     first_name: string;
     last_name: string;
     age: number;
-  }) => Promise<{ success: boolean; user?: any; access_token?: string }>;
+  }) => Promise<{ success: boolean; user?: User; access_token?: string }>;
   verifyEmail: (user_id: number, verification_code: string) => Promise<void>;
 }
 
@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           const response = await authAPI.profile();
           setUser(response.data.user);
-        } catch (error) {
+        } catch {
           // Token is invalid
           removeAuthToken();
         }
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       setAuthToken(access_token);
       setUser(userData);
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw new Error(error.response?.data?.error || 'Login failed');
     }
   };
@@ -94,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Fallback for production (verification required)
       return { success: false, user_id: response.data.user?.id };
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw new Error(error.response?.data?.error || 'Registration failed');
     }
   };
@@ -106,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       setAuthToken(access_token);
       setUser(userData);
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw new Error(error.response?.data?.error || 'Email verification failed');
     }
   };
