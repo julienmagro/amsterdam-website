@@ -35,7 +35,7 @@ interface AuthContextType {
     first_name: string;
     last_name: string;
     age: number;
-  }) => Promise<{ success: boolean; user?: User; access_token?: string }>;
+  }) => Promise<{ success: boolean; user?: User; access_token?: string; user_id?: number }>;
   verifyEmail: (user_id: number, verification_code: string) => Promise<void>;
 }
 
