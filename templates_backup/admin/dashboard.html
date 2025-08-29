@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Amsterdam</title>
+    <meta name="description" content="Administrator dashboard for Amsterdam site management.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/amsterdam-flag.svg') }}">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/main.css') }}">
+</head>
+<body class="admin-body">
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-container">
+                <a href="{{ url_for('home') }}" class="nav-logo">
+                    <img src="{{ url_for('static', filename='assets/amsterdam-flag.svg') }}" alt="Amsterdam flag" class="flag-icon">
+                    <span class="nav-title">Amsterdam Admin</span>
+                </a>
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('admin_dashboard') }}" class="nav-link active">Dashboard</a></li>
+                    <li><a href="{{ url_for('admin_users') }}" class="nav-link">Users</a></li>
+                    <li><a href="{{ url_for('home') }}" class="nav-link">← Site</a></li>
+                </ul>
+                
+                <!-- User menu -->
+                {% include 'user_menu.html' %}
+            </div>
+        </nav>
+    </header>
+
+    <main class="main">
+        <section class="page-hero">
+            <div class="page-container">
+                <h1 class="page-title">🛠️ Admin Dashboard</h1>
+                <p class="page-subtitle">Site administration and management tools</p>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="content-container">
+                
+                <!-- Flash messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flash-messages">
+                            {% for category, message in messages %}
+                                <div class="flash-message flash-{{ category }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Statistics Cards -->
+                <div class="admin-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-content">
+                            <h3 class="stat-number">{{ stats.total_users }}</h3>
+                            <p class="stat-label">Total Users</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">🧮</div>
+                        <div class="stat-content">
+                            <h3 class="stat-number">{{ stats.total_calculations }}</h3>
+                            <p class="stat-label">Total Calculations</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">👑</div>
+                        <div class="stat-content">
+                            <h3 class="stat-number">{{ stats.admin_users }}</h3>
+                            <p class="stat-label">Admin Users</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">😊</div>
+                        <div class="stat-content">
+                            <h3 class="stat-number">{{ stats.regular_users }}</h3>
+                            <p class="stat-label">Regular Users</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="admin-actions">
+                    <h2>🚀 Quick Actions</h2>
+                    <div class="action-buttons">
+                        <a href="{{ url_for('admin_users') }}" class="action-btn primary">
+                            👥 Manage Users
+                        </a>
+                        <a href="{{ url_for('calculation_history') }}" class="action-btn secondary">
+                            📊 View All Calculations
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="admin-sections">
+                    <div class="admin-section">
+                        <h2>🆕 Recent Users</h2>
+                        <div class="recent-list">
+                            {% if recent_users %}
+                                {% for user in recent_users %}
+                                    <div class="recent-item">
+                                        <div class="recent-icon">
+                                            {% if user.is_admin %}👑{% else %}👤{% endif %}
+                                        </div>
+                                        <div class="recent-content">
+                                            <strong>{{ user.email }}</strong>
+                                            <span class="recent-date">{{ user.created_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                                        </div>
+                                        {% if user.is_admin %}
+                                            <span class="admin-badge">Admin</span>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="empty-state">No users yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="admin-section">
+                        <h2>🧮 Recent Calculations</h2>
+                        <div class="recent-list">
+                            {% if recent_calculations %}
+                                {% for calc in recent_calculations %}
+                                    <div class="recent-item">
+                                        <div class="recent-icon">📊</div>
+                                        <div class="recent-content">
+                                            <strong>{{ calc.number1 }} {{ calc.operation }} {{ calc.number2 }} = {{ calc.result }}</strong>
+                                            <span class="recent-date">{{ calc.calculated_at.strftime('%B %d at %I:%M %p') }}</span>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="empty-state">No calculations yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <p class="footer-text">&copy; 2024 Amsterdam Discovery Site. Admin Panel - Handle with care! 🔒</p>
+        </div>
+    </footer>
+
+    <!-- User menu JavaScript -->
+    {% include 'user_menu_script.html' %}
+</body>
+</html>
