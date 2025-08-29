@@ -16,8 +16,9 @@ interface User {
   email: string;
   first_name: string;
   last_name: string;
-  age?: number;
-  role: string;
+  user_age?: number;
+  is_admin: boolean;
+  google_id?: string;
   profile_picture?: string;
   email_verified: boolean;
 }
