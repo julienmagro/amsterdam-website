@@ -80,7 +80,7 @@ export default function Navigation() {
                     >
                       Calculation History
                     </Link>
-                    {user.role === 'admin' && (
+                    {user.is_admin && (
                       <Link 
                         href="/admin" 
                         className="block py-4 px-4 text-white text-sm transition-all duration-300 hover:bg-white/10 hover:text-yellow-400"
