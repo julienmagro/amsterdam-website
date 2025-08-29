@@ -267,7 +267,7 @@ export default function RegisterPage() {
                     Check Your Email
                   </h3>
                   <p style={{ color: 'var(--text-light-gray)' }}>
-                    We've sent a 6-digit verification code to <strong>{formData.email}</strong>
+                    We&apos;ve sent a 6-digit verification code to <strong>{formData.email}</strong>
                   </p>
                 </div>
 

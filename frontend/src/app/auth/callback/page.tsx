@@ -7,7 +7,7 @@ import { getAuthToken } from '@/lib/api';
 
 export default function AuthCallbackPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { } = useAuth();
 
   useEffect(() => {
     // Function to check for token and redirect

@@ -142,7 +142,7 @@ export default function CalculationHistoryPage() {
                     No Calculations Yet
                   </h3>
                   <p className="mb-6" style={{ color: 'var(--text-light-gray)' }}>
-                    You haven't performed any calculations yet. Start calculating to see your history here!
+                    You haven&apos;t performed any calculations yet. Start calculating to see your history here!
                   </p>
                   <Link href="/calculator" className="cta-button">
                     Go to Calculator
