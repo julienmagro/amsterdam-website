@@ -205,7 +205,7 @@ export default function ProfilePage() {
                     </label>
                     <input
                       type="number"
-                      value={user.age || ''}
+                      value={user.user_age || ''}
                       className="form-input"
                       placeholder="Your age"
                       readOnly
