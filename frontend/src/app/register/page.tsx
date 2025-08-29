@@ -6,6 +6,10 @@ import Link from 'next/link';
 import Navigation from '@/components/Navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
+interface ApiError {
+  message?: string;
+}
+
 export default function RegisterPage() {
   const router = useRouter();
   const { register, verifyEmail, user } = useAuth();
@@ -63,7 +67,7 @@ export default function RegisterPage() {
         setStep('verify');
       }
     } catch (error: unknown) {
-      setError((error as any)?.message || 'Registration failed');
+      setError((error as ApiError)?.message || 'Registration failed');
     } finally {
       setIsLoading(false);
     }
@@ -80,7 +84,7 @@ export default function RegisterPage() {
       await verifyEmail(userId, verificationCode);
       router.push('/calculator');
     } catch (error: unknown) {
-      setError((error as any)?.message || 'Verification failed');
+      setError((error as ApiError)?.message || 'Verification failed');
     } finally {
       setIsLoading(false);
     }

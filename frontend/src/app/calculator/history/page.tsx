@@ -6,6 +6,14 @@ import { calculatorAPI } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 
+interface ApiError {
+  response?: {
+    data?: {
+      error?: string;
+    };
+  };
+}
+
 interface Calculation {
   id: number;
   expression: string;
@@ -38,7 +46,7 @@ export default function CalculationHistoryPage() {
         const response = await calculatorAPI.getHistory();
         setHistoryData(response.data);
       } catch (error: unknown) {
-        setError((error as any)?.response?.data?.error || 'Failed to load calculation history');
+        setError((error as ApiError)?.response?.data?.error || 'Failed to load calculation history');
       } finally {
         setIsLoading(false);
       }

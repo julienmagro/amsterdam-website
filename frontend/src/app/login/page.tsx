@@ -6,6 +6,10 @@ import Link from 'next/link';
 import Navigation from '@/components/Navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
+interface ApiError {
+  message?: string;
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const { login, user } = useAuth();
@@ -29,7 +33,7 @@ export default function LoginPage() {
       await login(email, password);
       router.push('/calculator');
     } catch (error: unknown) {
-      setError((error as any)?.message || 'Login failed');
+      setError((error as ApiError)?.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }

@@ -6,6 +6,14 @@ import { calculatorAPI } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 
+interface ApiError {
+  response?: {
+    data?: {
+      error?: string;
+    };
+  };
+}
+
 interface CalculationResult {
   result: number;
   expression: string;
@@ -44,7 +52,7 @@ export default function CalculatorPage() {
 
       setResult(response.data);
     } catch (error: unknown) {
-      setError((error as any)?.response?.data?.error || 'Calculation failed');
+      setError((error as ApiError)?.response?.data?.error || 'Calculation failed');
     } finally {
       setIsLoading(false);
     }
