@@ -21,6 +21,7 @@ interface User {
   google_id?: string;
   profile_picture?: string;
   email_verified: boolean;
+  calculations_count?: number;
 }
 
 interface AuthContextType {
