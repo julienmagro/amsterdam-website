@@ -3,8 +3,15 @@ services:
     name: staging-amsterdam-website
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    buildCommand: |
+      pip install -r requirements.txt &&
+      curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - &&
+      sudo apt-get install -y nodejs &&
+      cd frontend &&
+      npm install &&
+      npm run build &&
+      cd ..
+    startCommand: gunicorn api:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9

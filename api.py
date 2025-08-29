@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, session, url_for, redirect, make_response
+from flask import Flask, request, jsonify, session, url_for, redirect, make_response, send_from_directory
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -155,9 +155,9 @@ def google_success():
     <body>
     <script>
         // Store token in cookie and redirect
-        document.cookie = "access_token={access_token}; path=/; max-age=86400; SameSite=Lax; domain=localhost";
+        document.cookie = "access_token={access_token}; path=/; max-age=86400; SameSite=Lax";
         setTimeout(function() {{
-            window.location.href = "http://localhost:3000/auth/callback";
+            window.location.href = "/auth/callback";
         }}, 500);
     </script>
     <p>Login successful! Redirecting in 1 second...</p>
@@ -170,10 +170,9 @@ def google_success():
         'access_token', 
         access_token, 
         max_age=86400,  # 1 day
-        secure=False,   # HTTP is OK for localhost
+        secure=False,   # Will be True in production HTTPS
         httponly=False, # Allow JavaScript access
-        samesite='Lax',
-        domain='localhost'
+        samesite='Lax'
     )
     
     return response
@@ -555,6 +554,31 @@ def api_internal_error(error):
     return jsonify({'error': 'Internal server error'}), 500
 
 # ===================== APPLICATION STARTUP =====================
+
+# ===================== SERVE REACT APP IN PRODUCTION =====================
+
+import os
+
+# Check if we have a React build directory
+react_build_path = os.path.join(os.path.dirname(__file__), 'frontend', 'out')
+react_build_exists = os.path.exists(react_build_path)
+
+if react_build_exists:
+    # Serve React static files
+    @app.route('/')
+    @app.route('/<path:path>')
+    def serve_react(path=''):
+        """Serve React app for all non-API routes"""
+        # Skip API routes
+        if path.startswith('api/') or path.startswith('auth/'):
+            return jsonify({'error': 'Endpoint not found'}), 404
+        
+        # Try to serve the specific file
+        if path and os.path.exists(os.path.join(react_build_path, path)):
+            return send_from_directory(react_build_path, path)
+        
+        # For all other routes, serve index.html (React routing)
+        return send_from_directory(react_build_path, 'index.html')
 
 if __name__ == '__main__':
     with app.app_context():

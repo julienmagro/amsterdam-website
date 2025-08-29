@@ -1,9 +1,28 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
+// Get the correct API base URL for different environments
+const getApiBaseUrl = () => {
+  if (typeof window === 'undefined') {
+    // Server-side: use environment variable or default
+    return process.env.API_BASE_URL || 'http://localhost:5001/api';
+  }
+  
+  // Client-side: detect environment
+  const hostname = window.location.hostname;
+  
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    // Local development
+    return 'http://localhost:5001/api';
+  } else {
+    // Production/staging: same domain
+    return `${window.location.protocol}//${window.location.host}/api`;
+  }
+};
+
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: 'http://localhost:5001/api',
+  baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },

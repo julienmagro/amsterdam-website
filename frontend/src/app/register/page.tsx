@@ -121,7 +121,7 @@ export default function RegisterPage() {
                 {/* Google OAuth */}
                 <div className="mb-8">
                   <a
-                    href="http://localhost:5001/auth/google"
+                    href="/auth/google"
                     className="flex items-center justify-center gap-4 w-full py-4 px-6 rounded-xl font-medium text-lg transition-all duration-300"
                     style={{
                       background: '#ffffff',
