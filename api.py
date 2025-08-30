@@ -100,14 +100,23 @@ login_manager.login_view = 'auth.login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# Create Google OAuth blueprint
+# Create Google OAuth blueprint with environment-aware redirect URL
+def get_oauth_redirect_url():
+    """Get OAuth redirect URL based on environment"""
+    if current_env == 'local':
+        return 'http://localhost:5001/auth/google/authorized'
+    else:
+        # For staging/production, use the same domain
+        return None  # Flask-Dance will auto-generate from request
+
 google_bp = make_google_blueprint(
     client_id=app.config['GOOGLE_OAUTH_CLIENT_ID'],
     client_secret=app.config['GOOGLE_OAUTH_CLIENT_SECRET'],
     scope=['https://www.googleapis.com/auth/userinfo.profile', 
            'https://www.googleapis.com/auth/userinfo.email', 
            'openid'],
-    storage=SQLAlchemyStorage(OAuthToken, db.session)
+    storage=SQLAlchemyStorage(OAuthToken, db.session),
+    redirect_url=get_oauth_redirect_url()
 )
 app.register_blueprint(google_bp, url_prefix='/auth')
 
@@ -209,7 +218,7 @@ def google_success():
         'access_token', 
         access_token, 
         max_age=86400,  # 1 day
-        secure=False,   # Will be True in production HTTPS
+        secure=(current_env != 'local'),  # True for HTTPS in staging/production
         httponly=False, # Allow JavaScript access
         samesite='Lax'
     )
