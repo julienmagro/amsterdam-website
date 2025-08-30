@@ -183,7 +183,7 @@ def google_success():
         <head><title>Login Failed</title></head>
         <body>
         <script>
-            window.location.href = "{frontend_url}/login?error=oauth_failed";
+            window.location.href = "/login?error=oauth_failed";
         </script>
         <p>Login failed. Redirecting...</p>
         </body>
@@ -205,7 +205,7 @@ def google_success():
         // Store token in cookie and redirect
         document.cookie = "access_token={access_token}; path=/; max-age=86400; SameSite=Lax";
         setTimeout(function() {{
-            window.location.href = "{frontend_url}/auth/callback";
+            window.location.href = "/calculator";
         }}, 500);
     </script>
     <p>Login successful! Redirecting in 1 second...</p>
