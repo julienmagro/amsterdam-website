@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, session, url_for, redirect, make_response, send_from_directory
+from flask import Flask, request, jsonify, session, url_for, redirect, make_response, send_from_directory, abort
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -205,7 +205,7 @@ def google_success():
         // Store token in cookie and redirect
         document.cookie = "access_token={access_token}; path=/; max-age=86400; SameSite=Lax";
         setTimeout(function() {{
-            window.location.href = "/auth/callback";
+            window.location.href = "{frontend_url}/auth/callback";
         }}, 500);
     </script>
     <p>Login successful! Redirecting in 1 second...</p>
@@ -612,20 +612,30 @@ react_build_path = os.path.join(os.path.dirname(__file__), 'frontend', 'out')
 react_build_exists = os.path.exists(react_build_path)
 
 if react_build_exists:
-    # Serve React static files
-    @app.route('/')
+    # Serve React static files - MUST be registered LAST to not interfere with API routes
+    @app.route('/', defaults={'path': ''})
     @app.route('/<path:path>')
-    def serve_react(path=''):
+    def serve_react(path):
         """Serve React app for all non-API routes"""
-        # Skip API routes
-        if path.startswith('api/') or path.startswith('auth/'):
-            return jsonify({'error': 'Endpoint not found'}), 404
+        # List of path prefixes that should NOT be handled by React
+        # These are handled by Flask directly
+        flask_route_prefixes = ['api/', 'auth/']
         
-        # Try to serve the specific file
-        if path and os.path.exists(os.path.join(react_build_path, path)):
-            return send_from_directory(react_build_path, path)
+        # Check if this path should be handled by Flask
+        for prefix in flask_route_prefixes:
+            if path.startswith(prefix):
+                # Return 404 to let Flask's error handler or other routes take over
+                abort(404)
         
-        # For all other routes, serve index.html (React routing)
+        # Try to serve static files (JS, CSS, images, etc.)
+        if path and '.' in path:
+            if os.path.exists(os.path.join(react_build_path, path)):
+                return send_from_directory(react_build_path, path)
+            else:
+                # File not found
+                abort(404)
+        
+        # For all other routes, serve index.html (React client-side routing)
         return send_from_directory(react_build_path, 'index.html')
 
 if __name__ == '__main__':
