@@ -35,6 +35,8 @@ services:
         fromDatabase:
           name: amsterdam-staging-db
           property: connectionString
+      - key: FRONTEND_URL
+        value: https://staging-amsterdam-website.onrender.com
         
   - type: pgsql
     name: amsterdam-staging-db

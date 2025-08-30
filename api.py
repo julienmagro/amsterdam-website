@@ -16,14 +16,53 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-# Allow OAuth over HTTP for local development (NEVER in production!)
-import os
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-
 app = Flask(__name__)
 
-# Enable CORS for React frontend
-CORS(app, origins=['http://localhost:3000'], supports_credentials=True)
+# ===================== ENVIRONMENT CONFIGURATION =====================
+
+def get_environment():
+    """Detect current environment"""
+    env = os.environ.get('ENVIRONMENT', 'local')
+    if env in ['local', 'development']:
+        return 'local'
+    elif env in ['staging', 'test']:
+        return 'staging'
+    else:
+        return 'production'
+
+def get_frontend_url():
+    """Get frontend URL based on environment"""
+    env = get_environment()
+    
+    if env == 'local':
+        return 'http://localhost:3000'
+    elif env == 'staging':
+        # Use the same domain as the backend for staging
+        return os.environ.get('FRONTEND_URL', 'https://amsterdam-site-staging.onrender.com')
+    else:
+        # Production
+        return os.environ.get('FRONTEND_URL', 'https://pirateship.nl')
+
+# Environment-specific configuration
+current_env = get_environment()
+frontend_url = get_frontend_url()
+
+print(f"🌍 Environment: {current_env}")
+print(f"🌐 Frontend URL: {frontend_url}")
+
+# Allow OAuth over HTTP ONLY for local development
+if current_env == 'local':
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+    print("🔓 OAuth over HTTP enabled for local development")
+
+# Enable CORS for React frontend (environment-aware)
+cors_origins = [frontend_url]
+if current_env == 'local':
+    # Allow both localhost variations for local development
+    cors_origins.extend(['http://localhost:3000', 'http://127.0.0.1:3000'])
+
+CORS(app, origins=cors_origins, supports_credentials=True)
+print(f"🌐 CORS enabled for: {cors_origins}")
 
 # Database configuration
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
@@ -135,7 +174,7 @@ def google_success():
         <head><title>Login Failed</title></head>
         <body>
         <script>
-            window.location.href = "http://localhost:3000/login?error=oauth_failed";
+            window.location.href = "{frontend_url}/login?error=oauth_failed";
         </script>
         <p>Login failed. Redirecting...</p>
         </body>
