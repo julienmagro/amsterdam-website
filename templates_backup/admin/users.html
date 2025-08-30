@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Amsterdam Admin</title>
+    <meta name="description" content="User management interface for Amsterdam site administrators.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/amsterdam-flag.svg') }}">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/main.css') }}">
+</head>
+<body class="admin-body">
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-container">
+                <a href="{{ url_for('home') }}" class="nav-logo">
+                    <img src="{{ url_for('static', filename='assets/amsterdam-flag.svg') }}" alt="Amsterdam flag" class="flag-icon">
+                    <span class="nav-title">Amsterdam Admin</span>
+                </a>
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('admin_dashboard') }}" class="nav-link">Dashboard</a></li>
+                    <li><a href="{{ url_for('admin_users') }}" class="nav-link active">Users</a></li>
+                    <li><a href="{{ url_for('home') }}" class="nav-link">← Site</a></li>
+                </ul>
+                
+                <!-- User menu -->
+                {% include 'user_menu.html' %}
+            </div>
+        </nav>
+    </header>
+
+    <main class="main">
+        <section class="page-hero">
+            <div class="page-container">
+                <h1 class="page-title">👥 User Management</h1>
+                <p class="page-subtitle">Manage user accounts and permissions</p>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="content-container">
+                
+                <!-- Flash messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flash-messages">
+                            {% for category, message in messages %}
+                                <div class="flash-message flash-{{ category }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <!-- User Statistics -->
+                <div class="user-stats">
+                    <p><strong>{{ users|length }}</strong> total users</p>
+                </div>
+
+                <!-- Users Table -->
+                <div class="users-table-container">
+                    {% if users %}
+                        <table class="users-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Age</th>
+                                    <th>Role</th>
+                                    <th>Joined</th>
+                                    <th>Calculations</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                    <tr class="user-row {% if user.id == current_user.id %}current-user{% endif %}">
+                                        <td class="user-info">
+                                            <div class="user-avatar">
+                                                {% if user.is_admin %}👑{% else %}👤{% endif %}
+                                            </div>
+                                            <div class="user-details">
+                                                <strong>{{ user.get_display_name() }}</strong>
+                                                {% if user.is_google_user() %}
+                                                    <span class="google-badge">Google</span>
+                                                {% endif %}
+                                                {% if user.id == current_user.id %}
+                                                    <span class="current-user-badge">You</span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td class="user-email">{{ user.email }}</td>
+                                        <td class="user-age">
+                                            {% if user.user_age %}
+                                                {{ user.user_age }}
+                                            {% else %}
+                                                <span class="no-age">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="user-role">
+                                            {% if user.is_admin %}
+                                                <span class="role-badge admin">Admin</span>
+                                            {% else %}
+                                                <span class="role-badge user">User</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="user-date">{{ user.created_at.strftime('%b %d, %Y') }}</td>
+                                        <td class="user-calculations">{{ user.calculations|length }}</td>
+                                        <td class="user-actions">
+                                            {% if user.id != current_user.id %}
+                                                <!-- Toggle Admin Status -->
+                                                <form method="POST" action="{{ url_for('admin_toggle_admin', user_id=user.id) }}" style="display: inline;">
+                                                    {% if user.is_admin %}
+                                                        <button type="submit" class="action-btn-small demote" 
+                                                                onclick="return confirm('Remove admin privileges for {{ user.email }}?')">
+                                                            📉 Demote
+                                                        </button>
+                                                    {% else %}
+                                                        <button type="submit" class="action-btn-small promote"
+                                                                onclick="return confirm('Grant admin privileges to {{ user.email }}?')">
+                                                            📈 Promote
+                                                        </button>
+                                                    {% endif %}
+                                                </form>
+                                                
+                                                <!-- Delete User -->
+                                                <form method="POST" action="{{ url_for('admin_delete_user', user_id=user.id) }}" style="display: inline;">
+                                                    <button type="submit" class="action-btn-small delete"
+                                                            onclick="return confirm('⚠️ DELETE {{ user.email }}?\n\nThis will permanently delete:\n- User account\n- All their calculations\n- Cannot be undone!\n\nType DELETE to confirm.') && prompt('Type DELETE to confirm:') === 'DELETE'">
+                                                        🗑️ Delete
+                                                    </button>
+                                                </form>
+                                            {% else %}
+                                                <span class="action-disabled">Current User</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <div class="empty-state">
+                            <h3>No users found</h3>
+                            <p>There are no users in the system yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Admin Instructions -->
+                <div class="admin-help">
+                    <h3>🛡️ Admin Tools</h3>
+                    <ul>
+                        <li><strong>Promote/Demote:</strong> Grant or remove admin privileges</li>
+                        <li><strong>Delete User:</strong> Permanently remove user and all their data</li>
+                        <li><strong>Security:</strong> You cannot modify your own account from here</li>
+                        <li><strong>Data Protection:</strong> All deletions are logged and irreversible</li>
+                    </ul>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <p class="footer-text">&copy; 2024 Amsterdam Discovery Site. User Management - Use responsibly! ⚠️</p>
+        </div>
+    </footer>
+
+    <!-- User menu JavaScript -->
+    {% include 'user_menu_script.html' %}
+</body>
+</html>
